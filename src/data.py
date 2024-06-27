@@ -133,18 +133,18 @@ def all_games_list_to_df(all_games_list):
 
     return clean_games_df[col_order]
 
-def get_filepath(start_date, end_date):
+def get_filepath(start_date, end_date, suffix="raw", prefix="all_games"):
     #2024-01-01 -> 2024-01
-    filename = f"all_games_{start_date[:7]}_to_{end_date[:7]}_raw.csv"
+    filename = f"{prefix}_{start_date[:7]}_to_{end_date[:7]}_{suffix}.csv"
 
     data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
     filepath = os.path.join(data_dir,filename)
 
     return filepath
 
-def save_file(df, start_date, end_date):
+def save_file(df, start_date, end_date, suffix="raw", prefix="all_games"):
 
-    filepath = get_filepath(start_date,end_date)
+    filepath = get_filepath(start_date, end_date, suffix, prefix)
     df.to_csv(filepath, index=False)
     print(f"File saved in {filepath}")
 
@@ -157,7 +157,7 @@ def get_data():
     print(f"Looking for all games of chess played on Chess.com by {username} between {start_date} and {end_date}")
 
     #check if file already exists
-    filepath = get_filepath(start_date, end_date)
+    filepath = get_filepath(start_date, end_date, "raw", "all_games")
     if os.path.exists(filepath):
         print(f"file {filepath} already exists!")
 
