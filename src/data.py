@@ -4,15 +4,24 @@ import os
 import requests
 import re #regex for extracting info from pgn string
 
-def make_api_request(month, year, username="JammyNinja"):
+from dotenv import load_dotenv
+load_dotenv()
+
+START_DATE= os.getenv("START_DATE")
+END_DATE  =os.getenv("END_DATE")
+USERNAME = os.getenv("USERNAME")
+USER_EMAIL = os.getenv("USER_EMAIL")
+
+def make_api_request(month, year):
     """ gets all user games from that month
         calls chess.com API endpoint below
+        username and email taken from env
         eg: https://api.chess.com/pub/player/jammyninja/games/2024/05
     """
 
     #weird params, thanks to
     #https://www.chess.com/clubs/forum/view/error-403-in-member-profile?page=2
-    params = {"User-Agent" : f'username: {username},  email: jammyninja95@gmail.com'}
+    params = {"User-Agent" : f'username: {USERNAME},  email: {USER_EMAIL}'}
 
     url = f'https://api.chess.com/pub/player/jammyninja/games/{year}/{month}'
     response_json = requests.get(url,headers=params).json()
@@ -20,13 +29,14 @@ def make_api_request(month, year, username="JammyNinja"):
     #json object contains only one key, which is games
     return response_json["games"]
 
-def get_all_games_list(start_date="2023-01-01", end_date="2024-06-01"):
+def get_all_games_list():
     """
-        Calls Chess.com API to get all games that the user played in each month for the period specified
+        Calls Chess.com API to get all games that the user played in each month in
+        the period specified by START_DATE, END_DATE in env
         Returns list of all raw games found
     """
 
-    def make_api_dates(start_date="2023-01-01", end_date="2024-06-01"):
+    def make_api_dates():
         """ returns list of tuples where the sub dicts contain year and month
             eg: [('06', 2023), ('07', '2023')]
         """
@@ -34,14 +44,14 @@ def get_all_games_list(start_date="2023-01-01", end_date="2024-06-01"):
         month_map = {1: '01', 2: '02', 3: '03', 4: '04', 5: '05', 6: '06',
                     7: '07', 8: '08', 9: '09', 10: '10', 11: '11', 12: '12' }
 
-        for date in pd.date_range(start=start_date, end=end_date,freq='M'):
+        for date in pd.date_range(start=START_DATE, end=END_DATE,freq='M'):
             month = month_map[date.month]
             year  = str(date.year)
             out_dates.append((month, year))
 
         return out_dates
 
-    months_to_loop = make_api_dates(start_date, end_date)
+    months_to_loop = make_api_dates()
     all_games = []
 
     for month, year in months_to_loop:
@@ -133,7 +143,7 @@ def all_games_list_to_df(all_games_list):
 
     return clean_games_df[col_order]
 
-def get_filepath(start_date, end_date, suffix="raw", prefix="all_games"):
+def get_filepath(start_date, end_date, suffix, prefix):
     #2024-01-01 -> 2024-01
     filename = f"{prefix}_{start_date[:7]}_to_{end_date[:7]}_{suffix}.csv"
 
@@ -142,7 +152,7 @@ def get_filepath(start_date, end_date, suffix="raw", prefix="all_games"):
 
     return filepath
 
-def save_file(df, start_date, end_date, suffix="raw", prefix="all_games"):
+def save_file(df, suffix, prefix, start_date = START_DATE, end_date = END_DATE):
 
     filepath = get_filepath(start_date, end_date, suffix, prefix)
     df.to_csv(filepath, index=False)
@@ -150,21 +160,18 @@ def save_file(df, start_date, end_date, suffix="raw", prefix="all_games"):
 
 def get_data():
 
-    start_date="2023-01-01"
-    end_date  ="2024-06-01"
-    username = "JammyNinja"
-
-    print(f"Looking for all games of chess played on Chess.com by {username} between {start_date} and {end_date}")
+    print(f"""Looking for all games of chess played on Chess.com by {USERNAME}
+          between {START_DATE} and {END_DATE}""")
 
     #check if file already exists
-    filepath = get_filepath(start_date, end_date, "raw", "all_games")
+    filepath = get_filepath(START_DATE, END_DATE, suffix="raw", prefix="all_games")
     if os.path.exists(filepath):
         print(f"file {filepath} already exists!")
 
     else:
-        all_games_list = get_all_games_list(start_date=start_date, end_date=end_date)
+        all_games_list = get_all_games_list()
         all_games_df = all_games_list_to_df(all_games_list)
-        save_file(all_games_df, start_date, end_date)
+        save_file(all_games_df, suffix="raw", prefix="all_games")
 
 if __name__ == "__main__":
     get_data()
