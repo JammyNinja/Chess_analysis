@@ -1,8 +1,11 @@
 import pandas as pd
 import numpy as np #nan
+import os
+from dotenv import load_dotenv
 
 from data import get_filepath, save_file
 
+load_dotenv()
 
 def process_moves(row_in):
     """
@@ -63,7 +66,6 @@ def process_moves(row_in):
     }
 
     return row_out
-
 
 def process_winner_rating(row):
     """
@@ -382,18 +384,17 @@ def exclude_games(df, diff_max = 400):
 
 #test not excluding, test rating change
 def main():
+    START_DATE= os.getenv("START_DATE")
+    END_DATE  = os.getenv("END_DATE")
 
-    start_date="2023-01-01"
-    end_date  ="2024-06-01"
-
-    filepath = get_filepath(start_date,end_date)
+    filepath = get_filepath(prefix="all_games", suffix="raw", start_date=START_DATE, end_date=END_DATE)
     all_games_raw_df = pd.read_csv(filepath)
 
     all_games_new_cols_df = add_new_columns(all_games_raw_df)
     all_games_new_cols_df = order_columns(all_games_new_cols_df)
 
-    #save this df to file
-    save_file(all_games_new_cols_df, start_date, end_date,suffix= "all_cols")
+    #save df with all cols and rows to file
+    save_file(all_games_new_cols_df, prefix="all_games", suffix= "all_cols")
 
     selected_games_df = exclude_games(all_games_new_cols_df)
     selected_games_df = select_columns(selected_games_df)
@@ -401,8 +402,7 @@ def main():
     print("selected_df shape:", selected_games_df.shape)
 
     #save this df to file
-    save_file(selected_games_df, start_date, end_date, prefix="select_games",suffix= "select_cols" )
-
+    save_file(selected_games_df, prefix="select_games",suffix= "select_cols")
 
 if __name__ == "__main__":
     main()
