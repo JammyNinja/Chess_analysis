@@ -158,21 +158,44 @@ def get_filepath(df_name, descriptor, start_date=START_MONTH, end_date=END_MONTH
 def save_file(df, df_name="all_games", descriptor="raw"):
     filepath_out = get_filepath(df_name=df_name, descriptor=descriptor)
 
-    #already in main()
-    # if os.path.exists(filepath_out):
-    #     print(f"file {filepath_out} already exists, NOT saving!")
+    #also in main()
+    if os.path.exists(filepath_out):
+        print(f"file {filepath_out} already exists, NOT saving!")
 
     df.to_csv(filepath_out, index=False)
 
     print("saved file as", filepath_out)
 
-def main():
+
+def load_file(df_name="all_games", descriptor="raw"):
+
+    filepath_in = get_filepath(df_name=df_name, descriptor=descriptor)
+
+    if os.path.exists(filepath_in):
+        df = pd.read_csv(filepath_in)
+    else:
+        download = input("file {filepath_in} not found, would you like to create it?\ny/n:")
+        if download.lower() == 'y':
+            df = download_data()
+            return df
+        else:
+            return
+
+def download_data():
+    all_games_list = get_all_games_list()
+    all_games_df = all_games_list_to_df(all_games_list)
+
+    save_file(all_games_df,  df_name="all_games", descriptor="raw")
+
+    return all_games_df
+
+def get_data(df_name="all_games", descriptor="raw"):
 
     print(f"""Looking for all games of chess played on Chess.com by {USERNAME}
           between {START_MONTH} and {END_MONTH}""")
 
     #check if file already exists
-    filepath = get_filepath(df_name="all_games", descriptor="raw")
+    filepath = get_filepath(df_name=df_name, descriptor=descriptor)
     if os.path.exists(filepath):
         print(f"file {filepath} already exists!")
 
@@ -181,12 +204,11 @@ def main():
             confirm = input("Do you want to download all games again?\n>>(Have you played more since last running this?)\ny/n:")
             # last_date = df.iloc[-1].start_time.strftime('%Y-%m')
             if confirm.lower() == 'n':
-                return
+                return pd.read_csv(filepath)
 
-    all_games_list = get_all_games_list()
-    all_games_df = all_games_list_to_df(all_games_list)
-    save_file(all_games_df,  df_name="all_games", descriptor="raw")
+    all_games_df = download_data()
+    return all_games_df
 
 if __name__ == "__main__":
-    main()
+    get_data()
     # get_all_games_list()
