@@ -7,12 +7,16 @@ import re #regex for extracting info from pgn string
 from dotenv import load_dotenv
 load_dotenv()
 
-START_DATE= os.getenv("START_DATE")
-END_DATE  =os.getenv("END_DATE")
+#api call dates
+START_MONTH= os.getenv("START_MONTH")
+END_MONTH = pd.to_datetime('today').strftime('%Y-%m')
+#api call user info
 USERNAME = os.getenv("USERNAME")
 USER_EMAIL = os.getenv("USER_EMAIL")
+#data directory for saving df as csv
+DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
 
-def make_api_request(month, year):
+def make_api_request(api_date):
     """ gets all user games from that month
         calls chess.com API endpoint below
         username and email taken from env
@@ -23,7 +27,8 @@ def make_api_request(month, year):
     #https://www.chess.com/clubs/forum/view/error-403-in-member-profile?page=2
     params = {"User-Agent" : f'username: {USERNAME},  email: {USER_EMAIL}'}
 
-    url = f'https://api.chess.com/pub/player/jammyninja/games/{year}/{month}'
+    # url = f'https://api.chess.com/pub/player/jammyninja/games/{year}/{month}'
+    url = f'https://api.chess.com/pub/player/jammyninja/games/{api_date}'
     response_json = requests.get(url,headers=params).json()
 
     #json object contains only one key, which is games
@@ -36,27 +41,26 @@ def get_all_games_list():
         Returns list of all raw games found
     """
 
-    def make_api_dates():
+    def make_api_dates(start_date=START_MONTH, end_date=END_MONTH):
         """ returns list of tuples where the sub dicts contain year and month
             eg: [('06', 2023), ('07', '2023')]
         """
         out_dates = []
-        month_map = {1: '01', 2: '02', 3: '03', 4: '04', 5: '05', 6: '06',
-                    7: '07', 8: '08', 9: '09', 10: '10', 11: '11', 12: '12' }
 
-        for date in pd.date_range(start=START_DATE, end=END_DATE,freq='M'):
-            month = month_map[date.month]
-            year  = str(date.year)
-            out_dates.append((month, year))
+        date_range_loop = pd.date_range(start=start_date, end=end_date,freq='MS', inclusive="both")
+
+        for date in date_range_loop:
+            api_date = date.strftime('%Y/%m')
+            out_dates.append(api_date)
 
         return out_dates
 
-    months_to_loop = make_api_dates()
+    api_dates = make_api_dates()
     all_games = []
 
-    for month, year in months_to_loop:
-        print(f"getting month {year}-{month}")
-        games = make_api_request(month,year)
+    for api_date in api_dates:
+        print("getting", api_date)
+        games = make_api_request(api_date)
         all_games += games
 
     print(f"Downloaded a total of {len(all_games)} games.")
@@ -143,35 +147,46 @@ def all_games_list_to_df(all_games_list):
 
     return clean_games_df[col_order]
 
-def get_filepath(prefix, suffix, start_date=START_DATE, end_date=END_DATE):
+def get_filepath(df_name, descriptor, start_date=START_MONTH, end_date=END_MONTH):
     #2024-01-01 -> 2024-01
-    filename = f"{prefix}_{start_date[:7]}_to_{end_date[:7]}_{suffix}.csv"
+    filename = f"{df_name}_{start_date}_to_{end_date}_{descriptor}.csv"
 
-    data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
-    filepath = os.path.join(data_dir,filename)
+    filepath = os.path.join(DATA_DIR,filename)
 
     return filepath
 
-def save_file(df, prefix, suffix, start_date=START_DATE, end_date=END_DATE):
+def save_file(df, df_name="all_games", descriptor="raw"):
+    filepath_out = get_filepath(df_name=df_name, descriptor=descriptor)
 
-    filepath = get_filepath(prefix, suffix, start_date, end_date)
-    df.to_csv(filepath, index=False)
-    print(f"File saved in {filepath}")
+    #already in main()
+    # if os.path.exists(filepath_out):
+    #     print(f"file {filepath_out} already exists, NOT saving!")
+
+    df.to_csv(filepath_out, index=False)
+
+    print("saved file as", filepath_out)
 
 def main():
 
     print(f"""Looking for all games of chess played on Chess.com by {USERNAME}
-          between {START_DATE} and {END_DATE}""")
+          between {START_MONTH} and {END_MONTH}""")
 
     #check if file already exists
-    filepath = get_filepath(prefix="all_games", suffix="raw")
+    filepath = get_filepath(df_name="all_games", descriptor="raw")
     if os.path.exists(filepath):
         print(f"file {filepath} already exists!")
 
-    else:
-        all_games_list = get_all_games_list()
-        all_games_df = all_games_list_to_df(all_games_list)
-        save_file(all_games_df,  prefix="all_games", suffix="raw")
+        confirm = ''
+        while confirm.lower() != 'y' and confirm.lower() != 'n':
+            confirm = input("Do you want to download all games again?\n>>(Have you played more since last running this?)\ny/n:")
+            # last_date = df.iloc[-1].start_time.strftime('%Y-%m')
+            if confirm.lower() == 'n':
+                return
+
+    all_games_list = get_all_games_list()
+    all_games_df = all_games_list_to_df(all_games_list)
+    save_file(all_games_df,  df_name="all_games", descriptor="raw")
 
 if __name__ == "__main__":
     main()
+    # get_all_games_list()
