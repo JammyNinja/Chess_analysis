@@ -179,7 +179,7 @@ def pieces_final_position(game):
             'B': 3,  # Bishop
             'R': 5,  # Rook
             'Q': 9,  # Queen
-            'K': 0,   # King (often considered to have infinite value, but in practical terms, it is 0 for valuation purposes)
+            'K': 0,  # King (often considered to have infinite value, but in practical terms, it is 0 for valuation purposes)
         }
         count = 0
         for i in pcs:
@@ -382,7 +382,7 @@ def exclude_games(df, diff_max = 400):
 
     return selected_games_df
 
-#test not excluding, test rating change
+#TODO test not excluding, test rating change
 def main():
     START_DATE= os.getenv("START_DATE")
     END_DATE  = os.getenv("END_DATE")
