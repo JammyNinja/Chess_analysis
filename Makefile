@@ -2,14 +2,14 @@ hello_world:
 	@echo "Welcome to the makefile"
 
 get_data:
-	python src/data.py
+	python scripts/data.py
 
 preproc:
-	python src/preprocessing.py
+	python scripts/preprocessing.py
 
 get_and_prep:
-	python src/data.py
-	python src/preprocessing.py
+	python scripts/data.py
+	python scripts/preprocessing.py
 
 clear_all_data:
 # are you sure?!

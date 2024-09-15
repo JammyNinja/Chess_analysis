@@ -161,10 +161,9 @@ def save_file(df, df_name="all_games", descriptor="raw"):
     #also in main()
     if os.path.exists(filepath_out):
         print(f"file {filepath_out} already exists, NOT saving!")
-
-    df.to_csv(filepath_out, index=False)
-
-    print("saved file as", filepath_out)
+    else:
+        df.to_csv(filepath_out, index=False)
+        print("saved file as", filepath_out)
 
 
 def load_file(df_name="all_games", descriptor="raw"):
