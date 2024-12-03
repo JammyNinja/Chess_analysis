@@ -38,3 +38,6 @@ run_app:
 
 run_api:
 	uvicorn public.back.api.root:app --port $(BACK_END_PORT)
+
+run_all:
+	make run_api & make run_app
