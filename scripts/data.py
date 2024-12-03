@@ -43,17 +43,17 @@ def get_all_games_list():
 
     def make_api_dates(start_date=START_MONTH, end_date=END_MONTH):
         """ returns list of tuples where the sub dicts contain year and month
-            eg: [('06', 2023), ('07', '2023')]
+            eg: [('06', '2023'), ('07', '2023')...]
         """
-        out_dates = []
+        api_dates = []
 
         date_range_loop = pd.date_range(start=start_date, end=end_date,freq='MS', inclusive="both")
 
         for date in date_range_loop:
             api_date = date.strftime('%Y/%m')
-            out_dates.append(api_date)
+            api_dates.append(api_date)
 
-        return out_dates
+        return api_dates
 
     api_dates = make_api_dates()
     all_games = []
@@ -161,10 +161,9 @@ def save_file(df, df_name="all_games", descriptor="raw"):
     #also in main()
     if os.path.exists(filepath_out):
         print(f"file {filepath_out} already exists, NOT saving!")
-
-    df.to_csv(filepath_out, index=False)
-
-    print("saved file as", filepath_out)
+    else:
+        df.to_csv(filepath_out, index=False)
+        print("saved file as", filepath_out)
 
 
 def load_file(df_name="all_games", descriptor="raw"):
@@ -190,7 +189,11 @@ def download_data():
     return all_games_df
 
 def get_data(df_name="all_games", descriptor="raw"):
-
+    """
+        Usage:
+            all_games_df_raw = get_data(df_name="select_games", descriptor="select_cols")
+            all_games_df_raw = get_data(df_name="all_games", descriptor="raw")
+    """
     print(f"""Looking for all games of chess played on Chess.com by {USERNAME}
           between {START_MONTH} and {END_MONTH}""")
 

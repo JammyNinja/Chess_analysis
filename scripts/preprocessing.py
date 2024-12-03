@@ -3,7 +3,7 @@ import numpy as np #nan
 import os
 from dotenv import load_dotenv
 
-from data import get_filepath, save_file
+from data import get_filepath, save_file, get_data
 
 load_dotenv()
 
@@ -49,8 +49,8 @@ def process_moves(row_in):
             b_castled_side = "Queen"
             b_castled = move_num
 
-#     print(f"white castled {w_castled_side} side on move {w_castled}")
-#     print(f"black castled {b_castled_side} side on move {b_castled}")
+    #     print(f"white castled {w_castled_side} side on move {w_castled}")
+    #     print(f"black castled {b_castled_side} side on move {b_castled}")
 
     row_out = {
         "move_numbers" : move_nums,
@@ -91,7 +91,7 @@ def process_winner_rating(row):
         return False
 
     user_win = did_user_win()
-
+    user_rating = w_rating if user_colour == "white" else b_rating
     winner_rating_diff = w_rating - b_rating if winner == "white" else b_rating - w_rating
     user_rating_diff = w_rating - b_rating if user_colour == "white" else b_rating - w_rating
 
@@ -100,6 +100,7 @@ def process_winner_rating(row):
         "winner"       : winner,
         "winner_rating_diff"  : winner_rating_diff,
         "user_rating_diff" : user_rating_diff,
+        "user_rating" : user_rating,
         "user_win"     : user_win,
         "user_colour" : user_colour
     }
@@ -215,7 +216,7 @@ def pieces_final_position(game):
         #pieces on the board including king
         "winner_ttl_pieces_count" : winner_ttl_pieces_count,
         "loser_ttl_pieces_count" : loser_ttl_pieces_count,
-#       #count pawns
+        ##count pawns
         "winner_pawns_count" : winner_pawns_count,
         "loser_pawns_count" : loser_pawns_count,
         #count of just the major/minor pieces
@@ -277,10 +278,12 @@ def order_columns(df):
         #ratings/results
         'white_rating', 'black_rating',
         'result', 'white_result', 'black_result',
-        'higher_rated_colour', 'winner', 'winner_rating_diff',
-        'user_rating_diff', 'user_win', 'user_colour', 'move_numbers',
+        'winner', 'user_win', 'user_colour',
+        'user_rating','user_rating_diff',
+        'higher_rated_colour', 'winner_rating_diff',
 
         #moves
+        'move_numbers',
         'white_moves',  'black_moves',
         'w_cstl_side', 'w_cstl_move',
         'b_cstl_side', 'b_cstl_move',
@@ -299,7 +302,7 @@ def order_columns(df):
     cols_pre = df.columns
     df = df[cols_order_all]
 
-    #check to see if any columns were missed, will happen when adding brancd new columns
+    #check to see if any columns were missed, will happen when adding brand new columns
     removed_cols = [col for col in cols_pre if col not in cols_order_all]
     if removed_cols:
         print("You have excluded the following columns while re-ordering...\n" + "\n".join([f"- {col}" for col in removed_cols]))
@@ -308,15 +311,18 @@ def order_columns(df):
     return df
 
 def select_columns(df, select_cols=None):
+    """function to select custom cols from df if desired,
+        importantly, it reports excluded columns"""
+
     if not select_cols:
         select_cols = [
             #metadata
                 'date', 'url',
                 'start_time', 'end_time',
                 'time_class', 'time_control',
-            #   'rated', 'rules', #used to filter out unwanted games
-                'white_username', 'black_username', "user_colour",
-                #ratings/result
+                #user ratings/result
+                'white_username', 'black_username',
+                "user_colour", "user_rating",
                 'result', 'winner', 'higher_rated_colour',
                 'white_rating', 'black_rating',
                 'white_result', 'black_result',
@@ -342,7 +348,7 @@ def select_columns(df, select_cols=None):
 
     return df[select_cols]
 
-def exclude_games(df, diff_max = 400):
+def exclude_games(df, diff_max = 400, constraints_custom = {}):
     #if True, remove corresponding games
     constraints = {
         "chess960" : True,
@@ -384,17 +390,19 @@ def exclude_games(df, diff_max = 400):
 
 #TODO test not excluding, test rating change
 def main():
-    START_DATE= os.getenv("START_DATE")
-    END_DATE  = os.getenv("END_DATE")
+    # START_DATE= os.getenv("START_DATE")
+    # END_DATE  = os.getenv("END_DATE")
 
-    filepath = get_filepath(prefix="all_games", suffix="raw", start_date=START_DATE, end_date=END_DATE)
-    all_games_raw_df = pd.read_csv(filepath)
+    # filepath = get_filepath(prefix="all_games", suffix="raw", start_date=START_DATE, end_date=END_DATE)
+    # all_games_raw_df = pd.read_csv(filepath)
+    print("Getting raw data to be preprocessed...")
+    all_games_raw_df = get_data(df_name="all_games", descriptor="raw")
 
     all_games_new_cols_df = add_new_columns(all_games_raw_df)
     all_games_new_cols_df = order_columns(all_games_new_cols_df)
 
     #save df with all cols and rows to file
-    save_file(all_games_new_cols_df, prefix="all_games", suffix= "all_cols")
+    save_file(all_games_new_cols_df, df_name="all_games", descriptor= "all_new_cols")
 
     selected_games_df = exclude_games(all_games_new_cols_df)
     selected_games_df = select_columns(selected_games_df)
@@ -402,7 +410,33 @@ def main():
     print("selected_df shape:", selected_games_df.shape)
 
     #save this df to file
-    save_file(selected_games_df, prefix="select_games",suffix= "select_cols")
+    save_file(selected_games_df, df_name="select_games", descriptor= "select_cols")
+
+def preprocess(raw_data, select = False):
+    # display("preprocessing raw data..", raw_data.head(1))
+    # all_games_raw_df = get_data(df_name="all_games", descriptor="raw")
+    df = raw_data.copy()
+
+    all_games_new_cols_df = add_new_columns(df)
+    all_games_new_cols_df = order_columns(all_games_new_cols_df)
+
+    #save df with all cols and rows to file
+    save_file(all_games_new_cols_df, df_name="all_games", descriptor= "all_new_cols")
+
+    if not select:
+        return all_games_new_cols_df
+    else:
+
+        selected_games_df = exclude_games(all_games_new_cols_df)
+        selected_games_df = select_columns(selected_games_df)
+
+        print("selected_df shape:", selected_games_df.shape)
+
+        #save this df to file
+        save_file(selected_games_df, df_name="select_games", descriptor= "select_cols")
+
+        return selected_games_df
+
 
 if __name__ == "__main__":
     main()
