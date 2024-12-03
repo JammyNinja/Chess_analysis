@@ -5,13 +5,16 @@ from dotenv import load_dotenv
 
 #load env variables
 load_dotenv()
-ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
-ADMIN_EMAIL = os.getenv("ADMIN_EMAIL")
 
-def make_api_request(username):
+def make_api_request_streamlit(username):
     """
         gets summary stats for given username
+        makes the request internally
+        just to get things up and running
     """
+    ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
+    ADMIN_EMAIL = os.getenv("ADMIN_EMAIL")
+
     mvp_url = f"https://api.chess.com/pub/player/{username}/stats"
     headers = {"User-Agent" : f'username: {ADMIN_USERNAME},  email: {ADMIN_EMAIL}'}
 
@@ -19,6 +22,25 @@ def make_api_request(username):
     # print(response.url)
 
     return response.json()
+
+
+def make_api_request_uvicorn(username, port = 8000):
+    """
+        uses api endpoint at localhost to get user stats
+    """
+
+    url = f"http://localhost:{port}/user_stats"
+
+    params = {
+        "username" : username
+    }
+
+    response = requests.get(url, params=params)
+    print(response.url)
+
+    return response.json()
+
+
 
 def display_user_stats(response, username):
     """
@@ -36,9 +58,11 @@ def display_user_stats(response, username):
             st.write(report)
 
 def on_enter():
+    #thanks to username_input button in main()
     username = st.session_state['username']
-    # st.session_state["username"] = username
-    response = make_api_request(username)
+
+    # response = make_api_request_streamlit(username)
+    response = make_api_request_uvicorn(username)
 
     with st.session_state['stats_output']:
         display_user_stats(response, username)
@@ -47,7 +71,7 @@ def main():
     chess_com_link = "https://www.chess.com"
     st.markdown(f'Welcome to my app, where you can see some analysis of your [Chess.com]({chess_com_link}) games')
 
-    st.text_input(
+    username_input = st.text_input(
         label="Please enter your chess.com username:",
         key = "username",
         on_change=on_enter
@@ -61,4 +85,5 @@ def main():
 
 #begin
 main()
+
 #run with: streamlit run app.py
