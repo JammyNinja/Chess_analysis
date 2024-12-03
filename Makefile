@@ -41,3 +41,16 @@ run_api:
 
 run_all:
 	make run_api & make run_app
+
+
+#unnecessary but I'll thank me later
+setup_project:
+	pyenv virtualenv chess_analysis
+	pyenv local chess_analysis
+	pip install --upgrade pip
+	pip install -r requirements.txt
+#just in case
+refresh_requirements:
+	pip freeze | xargs pip uninstall -y
+	pip install --upgrade pip
+	pip install -r requirements.txt
