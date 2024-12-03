@@ -41,3 +41,5 @@ run_api:
 
 run_all:
 	make run_api & make run_app
+
+
