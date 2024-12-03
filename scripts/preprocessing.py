@@ -49,8 +49,8 @@ def process_moves(row_in):
             b_castled_side = "Queen"
             b_castled = move_num
 
-#     print(f"white castled {w_castled_side} side on move {w_castled}")
-#     print(f"black castled {b_castled_side} side on move {b_castled}")
+    #     print(f"white castled {w_castled_side} side on move {w_castled}")
+    #     print(f"black castled {b_castled_side} side on move {b_castled}")
 
     row_out = {
         "move_numbers" : move_nums,
@@ -216,7 +216,7 @@ def pieces_final_position(game):
         #pieces on the board including king
         "winner_ttl_pieces_count" : winner_ttl_pieces_count,
         "loser_ttl_pieces_count" : loser_ttl_pieces_count,
-#       #count pawns
+        ##count pawns
         "winner_pawns_count" : winner_pawns_count,
         "loser_pawns_count" : loser_pawns_count,
         #count of just the major/minor pieces
@@ -411,6 +411,32 @@ def main():
 
     #save this df to file
     save_file(selected_games_df, df_name="select_games", descriptor= "select_cols")
+
+def preprocess(raw_data, select = False):
+    # display("preprocessing raw data..", raw_data.head(1))
+    # all_games_raw_df = get_data(df_name="all_games", descriptor="raw")
+    df = raw_data.copy()
+
+    all_games_new_cols_df = add_new_columns(df)
+    all_games_new_cols_df = order_columns(all_games_new_cols_df)
+
+    #save df with all cols and rows to file
+    save_file(all_games_new_cols_df, df_name="all_games", descriptor= "all_new_cols")
+
+    if not select:
+        return all_games_new_cols_df
+    else:
+
+        selected_games_df = exclude_games(all_games_new_cols_df)
+        selected_games_df = select_columns(selected_games_df)
+
+        print("selected_df shape:", selected_games_df.shape)
+
+        #save this df to file
+        save_file(selected_games_df, df_name="select_games", descriptor= "select_cols")
+
+        return selected_games_df
+
 
 if __name__ == "__main__":
     main()
