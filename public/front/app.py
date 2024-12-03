@@ -62,7 +62,7 @@ def on_enter():
     username = st.session_state['username']
 
     # response = make_api_request_streamlit(username)
-    response = make_api_request_uvicorn(username)
+    response = make_api_request_uvicorn(username, port = os.getenv("BACK_END_PORT", 8000))
 
     with st.session_state['stats_output']:
         display_user_stats(response, username)
