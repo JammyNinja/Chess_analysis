@@ -42,8 +42,6 @@ I am massively leaning on data made available by [Chess.com's API](https://www.c
 
 ## Who
 Me 😇 Louis, a long-time chess enthusiast and short-time data professional.
-
-- [Email](mailto:louis.auger.pro@gmail.com)
 - [LinkedIn](https://www.linkedin.com/in/louis-auger-data-london/)
 
 ## In the future:
