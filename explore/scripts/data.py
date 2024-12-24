@@ -10,6 +10,7 @@ load_dotenv()
 #api call dates
 START_MONTH= os.getenv("START_MONTH")
 END_MONTH = pd.to_datetime('today').strftime('%Y-%m')
+END_MONTH= os.getenv("END_MONTH")
 #api call user info
 USERNAME = os.getenv("USERNAME")
 USER_EMAIL = os.getenv("USER_EMAIL")
