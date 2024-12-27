@@ -60,6 +60,26 @@ def display_mvp_analysis(avg_opponent):
     username = st.session_state['username']
     st.markdown(f"The average opponent rating of {username} is: {round(avg_opponent)}")
 
+
+def display_results_by_rating():
+    # endpoint = "results_by_rating"
+    # response = make_api_request_uvicorn(endpoint,
+    #                                     params={},
+    #                                     port = os.getenv("BACK_END_PORT", 8000))
+    # print(response.url)
+
+    # rating_range_fig = response['fig']
+    # image=response.content
+    # st.pyplot(rating_range_fig)
+    
+    endpoint = "test_image"
+    port = os.getenv("BACK_END_PORT", 8000)
+    image_url = f"http://localhost:{port}/{endpoint}"
+
+    with st.session_state['output_display']:
+        st.image(image_url)
+
+
 def on_enter_show_user_ratings():
     #thanks to username_input button in main()
     username = st.session_state['username']
@@ -69,7 +89,7 @@ def on_enter_show_user_ratings():
                                         params,
                                         port = os.getenv("BACK_END_PORT", 8000))
 
-    with st.session_state['stats_output']:
+    with st.session_state['output_display']:
         display_user_stats(response, username)
 
 def on_enter_show_mvp_analysis():
@@ -82,7 +102,7 @@ def on_enter_show_mvp_analysis():
     response = make_api_request_uvicorn(endpoint,params,port)
 
     # avg_opponent=1069
-    with st.session_state['stats_output']:
+    with st.session_state['output_display']:
         # display_user_stats(response, username)
         display_mvp_analysis(response['avg_opponent'])
 
@@ -94,12 +114,13 @@ def main():
         label="Please enter your chess.com username:",
         key = "username",
         # on_change=on_enter_show_user_ratings
-        on_change=on_enter_show_mvp_analysis
+        # on_change=on_enter_show_mvp_analysis
+        on_change=display_results_by_rating
     )
 
     #initialise container with empty to actually hold the place
-    st.session_state['stats_output'] = st.container()
-    with st.session_state['stats_output']:
+    st.session_state['output_display'] = st.container()
+    with st.session_state['output_display']:
         st.empty()
 
 
