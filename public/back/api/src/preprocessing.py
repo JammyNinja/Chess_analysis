@@ -10,23 +10,36 @@ import os
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer
 
+from public.back.api.src.data import load_pickle, save_pickle, load_sample_raw_data
+
 #fixed filepaths
 path_to_data = os.path.join(os.path.dirname(__file__), "..", "data")
 clean_pipe_fname = "clean_pipeline.pkl"
 clean_pipe_path = os.path.join(path_to_data, "pipes", clean_pipe_fname)
 
-def load_raw_data_from_file(fname = "sample_raw.pkl"):
-
-    with open(os.path.join(path_to_data, fname), "rb") as file:
-        raw_data = pickle.load(file)
-
-    return raw_data
-
-def clean_raw_data():
-    raw_data = load_raw_data_from_file()
+def clean_raw_data(raw_data, save=True):
+    print("cleaning raw data...")
+    # raw_data = load_raw_data_from_file()
     clean_pipe = pickle.load(open(clean_pipe_path,"rb"))
     clean_data = clean_pipe.transform(raw_data)
 
+    clean_path = os.path.join(path_to_data, "sample_clean.pkl")
+
+    if save:
+        save_pickle(clean_data, clean_path)
+    else:
+        print("NOT saving clean data")
+
+    return clean_data
+
+def create_clean_sample_data():
+    #grab raw pickle file
+    raw_data = load_sample_raw_data()
+
+    #clean games + save clean
+    clean_data = clean_raw_data(raw_data, save=True)
+
+    # return clean_games
     return clean_data
 
 #PIPELINE FUNCS
@@ -82,7 +95,8 @@ def create_clean_pipe():
     ])
 
     #save clean pipe as pickle
-    pickle.dump(clean_pipe, open(clean_pipe_path, "wb"))
+    # pickle.dump(clean_pipe, open(clean_pipe_path, "wb"))
+    save_pickle(clean_pipe, clean_pipe_path)
 
     #saved clean pipe
     print("saved clean pipe to", clean_pipe_path)
