@@ -24,23 +24,21 @@ def make_api_request_streamlit(username):
     return response.json()
 
 
-def make_api_request_uvicorn(username, port = 8000):
+def make_api_request_uvicorn(endpoint, params = {}, port = 8000):
     """
         uses api endpoint at localhost to get user stats
     """
 
-    url = f"http://localhost:{port}/user_stats"
+    url = f"http://localhost:{port}/{endpoint}"#user_stats"
 
-    params = {
-        "username" : username
-    }
+    # params = {
+    #     "username" : username
+    # }
 
     response = requests.get(url, params=params)
     print(response.url)
 
     return response.json()
-
-
 
 def display_user_stats(response, username):
     """
@@ -57,15 +55,36 @@ def display_user_stats(response, username):
             report = f"Your best {time_control} rating is {best_rating}"
             st.write(report)
 
-def on_enter():
+def display_mvp_analysis(avg_opponent):
     #thanks to username_input button in main()
     username = st.session_state['username']
+    st.markdown(f"The average opponent rating of {username} is: {round(avg_opponent)}")
 
-    # response = make_api_request_streamlit(username)
-    response = make_api_request_uvicorn(username, port = os.getenv("BACK_END_PORT", 8000))
+def on_enter_show_user_ratings():
+    #thanks to username_input button in main()
+    username = st.session_state['username']
+    endpoint="user_stats"
+    params = {"username" : username}
+    response = make_api_request_uvicorn(endpoint,
+                                        params,
+                                        port = os.getenv("BACK_END_PORT", 8000))
 
     with st.session_state['stats_output']:
         display_user_stats(response, username)
+
+def on_enter_show_mvp_analysis():
+
+    port = os.getenv("BACK_END_PORT", 8000)
+    endpoint="mvp"
+    params={}
+
+    #uncomment to enable
+    response = make_api_request_uvicorn(endpoint,params,port)
+
+    # avg_opponent=1069
+    with st.session_state['stats_output']:
+        # display_user_stats(response, username)
+        display_mvp_analysis(response['avg_opponent'])
 
 def main():
     chess_com_link = "https://www.chess.com"
@@ -74,7 +93,8 @@ def main():
     username_input = st.text_input(
         label="Please enter your chess.com username:",
         key = "username",
-        on_change=on_enter
+        # on_change=on_enter_show_user_ratings
+        on_change=on_enter_show_mvp_analysis
     )
 
     #initialise container with empty to actually hold the place
