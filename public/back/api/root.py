@@ -3,6 +3,8 @@ import os
 import requests
 from dotenv import load_dotenv
 
+from public.back.api.src.analysis import mvp_analysis
+
 #load env variables
 load_dotenv()
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
@@ -48,5 +50,8 @@ def get_user_stats(username):
 
     return response.json()
 
+@app.get("/mvp")
+def show_mvp_analysis():
+    return mvp_analysis()
 
 #http://localhost:8000/
