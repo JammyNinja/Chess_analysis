@@ -44,6 +44,7 @@ def create_clean_sample_data():
 
 #PIPELINE FUNCS
 def type_conversion(df):
+    """converts date columns to datetime"""
     dt_cols = ["date"]
     for col in dt_cols:
         df[col] = pd.to_datetime(df[col], format='%d/%m/%Y')
@@ -51,6 +52,7 @@ def type_conversion(df):
 
 def extract_game_data(game, USERNAME = "JammyNinja"):
     """
+        Used in clean_pipe
         converts a game as received from chess.com API JSON to pandas Series
 
         try out the raw form at:
