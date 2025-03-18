@@ -79,7 +79,11 @@ def process_winner_rating(row):
 
     higher_rated = "white" if w_rating > b_rating else "black" #assumes draw is good for black
 
+    #these should pre-exist
     user_colour = "white" if row["white_username"] == "JammyNinja" else "black"
+    user_result = row["white_result"] if user_colour == "white" else row["black_result"]
+    opp_result = row["white_result"] if user_colour == "black" else row["black_result"]
+
 
     def did_user_win(user = "JammyNinja"):
         if winner == "white" and row["white_username"] == user:
@@ -90,19 +94,21 @@ def process_winner_rating(row):
             return "DRAW"
         return False
 
-    user_win = did_user_win()
+    # user_win = did_user_win()
     user_rating = w_rating if user_colour == "white" else b_rating
-    winner_rating_diff = w_rating - b_rating if winner == "white" else b_rating - w_rating
+    # winner_rating_diff = w_rating - b_rating if winner == "white" else b_rating - w_rating
     user_rating_diff = w_rating - b_rating if user_colour == "white" else b_rating - w_rating
 
     row_out = {
-        "higher_rated_colour" : higher_rated,
         "winner"       : winner,
-        "winner_rating_diff"  : winner_rating_diff,
-        "user_rating_diff" : user_rating_diff,
+        "user_colour" : user_colour,
+        # "higher_rated_colour" : higher_rated,
         "user_rating" : user_rating,
-        "user_win"     : user_win,
-        "user_colour" : user_colour
+        "user_rating_diff" : user_rating_diff,
+        # "winner_rating_diff"  : winner_rating_diff,
+        # "user_win"     : user_win, #maybe obsolete
+        "user_result" : user_result,
+        "opp_result" : opp_result
     }
 
     return row_out
@@ -243,7 +249,7 @@ def add_new_columns(games_df, printing=True):
     #uses winner_rating function to calculate the winner and rating swing
     win_rating_cols = games_df.apply(process_winner_rating, axis="columns", result_type="expand")
 
-    #uses process moves function to break down the moves into w/b, and when castled
+    #uses process_moves function to break down the moves into w/b, and when castled
     move_cols =       games_df.apply(process_moves, axis="columns",result_type="expand")
 
     #add the above columns for now, so that the below funcs know who the winner was
@@ -276,11 +282,12 @@ def order_columns(df):
         'white_clock', 'black_clock',
 
         #ratings/results
-        'white_rating', 'black_rating',
-        'result', 'white_result', 'black_result',
-        'winner', 'user_win', 'user_colour',
+        'user_colour', #'user_win'
         'user_rating','user_rating_diff',
-        'higher_rated_colour', 'winner_rating_diff',
+        'white_rating', 'black_rating',
+        'result', 'winner', #'white_result', 'black_result',
+        "user_result", "opp_result",
+        # 'higher_rated_colour', 'winner_rating_diff',
 
         #moves
         'move_numbers',
@@ -323,6 +330,7 @@ def select_columns(df, select_cols=None):
                 #user ratings/result
                 'white_username', 'black_username',
                 "user_colour", "user_rating",
+                "user_result" , "opp_result",
                 'result', 'winner', 'higher_rated_colour',
                 'white_rating', 'black_rating',
                 'white_result', 'black_result',
