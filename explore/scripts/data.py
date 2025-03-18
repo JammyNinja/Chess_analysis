@@ -10,7 +10,8 @@ load_dotenv()
 #api call dates
 START_MONTH= os.getenv("START_MONTH")
 END_MONTH = pd.to_datetime('today').strftime('%Y-%m')
-#api call user info
+# END_MONTH= os.getenv("END_MONTH") #uncomment to get one year of chess games (2023)
+#api call user info for headers
 USERNAME = os.getenv("USERNAME")
 USER_EMAIL = os.getenv("USER_EMAIL")
 #data directory for saving df as csv
@@ -114,6 +115,8 @@ def clean_game(game):
     black_rating = game["black"]["rating"]
     black_result = game["black"]["result"]
     black_username = game["black"]["username"]
+
+    #extract moves
 
     #wrap it up for output
     game_dict = {}

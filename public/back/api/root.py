@@ -3,6 +3,10 @@ import os
 import requests
 from dotenv import load_dotenv
 
+from fastapi.responses import FileResponse #returning image
+
+from public.back.api.src.analysis import mvp_analysis, get_results_by_rating_fig
+
 #load env variables
 load_dotenv()
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
@@ -47,6 +51,24 @@ def get_user_stats(username):
     response = requests.get(mvp_url, headers=headers)
 
     return response.json()
+
+@app.get("/mvp")
+def show_mvp_analysis():
+    return mvp_analysis()
+
+@app.get("/results_by_rating")
+def results_by_rating():
+    return {
+        "fig" : get_results_by_rating_fig()
+    }
+
+@app.get("/test_image")
+def rating_results_img():
+    path_to_data = os.path.join(os.path.dirname(__file__), "data")
+    test_image_filename = "test_fig.jpg"
+    test_image_path = os.path.join(path_to_data, test_image_filename)
+    return FileResponse(test_image_path)
+
 
 
 #http://localhost:8000/
