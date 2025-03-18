@@ -103,6 +103,11 @@ def create_clean_pipe():
     #saved clean pipe
     print("saved clean pipe to", clean_pipe_path)
 
+
+def load_clean_pipe():
+    clean_pipe = pickle.load(open(clean_pipe_path,"rb"))
+    return clean_pipe
+
 if __name__ == "__main__":
     # create_clean_pipe()
     print(clean_raw_data())

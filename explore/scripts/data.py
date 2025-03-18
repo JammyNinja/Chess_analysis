@@ -11,7 +11,7 @@ load_dotenv()
 START_MONTH= os.getenv("START_MONTH")
 END_MONTH = pd.to_datetime('today').strftime('%Y-%m')
 # END_MONTH= os.getenv("END_MONTH") #uncomment to get one year of chess games (2023)
-#api call user info
+#api call user info for headers
 USERNAME = os.getenv("USERNAME")
 USER_EMAIL = os.getenv("USER_EMAIL")
 #data directory for saving df as csv
