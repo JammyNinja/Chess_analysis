@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "chess-analysis"
+name = "chess_analysis_pkg"
 version = "0.1.0"
 description = "Analyse my chess.com games"
 authors = ["Louis Auger <jammyninja95@gmail.com>"]
