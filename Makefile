@@ -54,3 +54,8 @@ refresh_requirements:
 	pip freeze | xargs pip uninstall -y
 	pip install --upgrade pip
 	pip install -r requirements.txt
+
+poetry_commands:
+	echo "testing"
+# poetry init
+# poetry install
